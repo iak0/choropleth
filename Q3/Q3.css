@@ -1,0 +1,43 @@
+.title { 
+  font: 18px sans-serif; 
+}
+
+.axisLabel { 
+  fill: black;
+  font: 14px sans-serif;
+}
+
+.lineLabel { 
+  font: 12px sans-serif;
+}
+
+path { fill: none; }
+
+path:nth-child(1)  { stroke: #006400; }
+path:nth-child(2)  { stroke: #ff4500; }
+path:nth-child(3)  { stroke: #ffd700; }
+path:nth-child(4)  { stroke: #00ff00; }
+path:nth-child(5)  { stroke: #00ffff; }
+path:nth-child(6)  { stroke: #0000ff; }
+path:nth-child(7)  { stroke: #1e90ff; }
+path:nth-child(8)  { stroke: #ff1493; }
+
+.lines text:nth-child(1)  { fill: #006400; }
+.lines text:nth-child(2)  { fill: #ff4500; }
+.lines text:nth-child(3)  { fill: #ffd700; }
+.lines text:nth-child(4)  { fill: #00ff00; }
+.lines text:nth-child(5)  { fill: #00ffff; }
+.lines text:nth-child(6)  { fill: #0000ff; }
+.lines text:nth-child(7)  { fill: #1e90ff; }
+.lines text:nth-child(8)  { fill: #ff1493; }
+
+.circleLine:nth-child(1) circle { fill: #006400; }
+.circleLine:nth-child(2) circle { fill: #ffd700; }
+.circleLine:nth-child(3) circle { fill: #00ff00; }
+.circleLine:nth-child(4) circle { fill: #00ffff; }
+
+.circleLabel {
+  font: 8px sans-serif;
+  fill: white;
+  text-anchor: middle;
+}
