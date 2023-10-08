@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<head>
+<style>
+
+path.link {
+  fill: none;
+}
+
+circle {
+  stroke: #fff;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+text {
+  fill: #000;
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+
+path.link.solid {
+  stroke: green;
+  stroke-width: 1px;
+}
+
+path.link.dashed {
+  stroke-width: 3px;
+  stroke: #666;
+  stroke-dasharray: 5;
+}
+
+circle.fixed {
+  stroke-width: 8px;
+}
+
+</style>
+<meta charset="utf-8">
+<title></title>
+</head>
+
+<body>
+<script type="text/javascript" src="../lib/d3.v5.min.js"></script>
+<script>
+
+const COLORS = ['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8'];
+
+d3.dsv(",", "board_games.csv", d => ({
+    source: d.source,
+    target: d.target,
+    value: +d.value
+  })).then(data => {
+
+  var links = data;
+
+  var nodes = {};
+
+  // compute the distinct nodes from the links.
+  links.forEach(link => {
+      link.source = nodes[link.source] || (nodes[link.source] = {name: link.source, degree: 0, fixed: false});
+      link.target = nodes[link.target] || (nodes[link.target] = {name: link.target, degree: 0, fixed: false});
+  });
+
+  var width = 700,
+      height = 700;
+
+  var force = d3.forceSimulation()
+      .nodes(d3.values(nodes))
+      .force("link", d3.forceLink(links).distance(100))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force("x", d3.forceX())
+      .force("y", d3.forceY())
+      .force("charge", d3.forceManyBody().strength(-250))
+      .alphaTarget(1)
+      .on("tick", tick);
+
+  var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+  // add the links
+  var path = svg.append("g")
+      .selectAll("path")
+      .data(links)
+      .enter()
+      .append("path")
+      .attr("class", d => "link" + (!d.value ? " solid" : " dashed"));
+
+  // define the nodes
+  var node = svg.selectAll(".node")
+      .data(force.nodes())
+      .enter().append("g")
+      .attr("class", "node")
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended))
+      .on("dblclick", revive);
+
+  // add the nodes
+  node.append("circle")
+      .attr("id", d => d.name.replace(/\s+/g,'').toLowerCase())
+      .attr("r", d => {
+        if (!d.degree) {
+          d.degree = links.filter(l => l.source.name == d.name || l.target.name == d.name).length
+        } 
+        return 4 + 2 * d.degree 
+      })
+      .style("fill", calculateFill);
+
+  // add the text
+  node.append("text")
+      .text(d => d.name)
+      .attr("dx", d => 2 * d.degree + 4)
+      .attr("dy", d => -2 * d.degree - 4)
+      .attr("class", "label");
+
+  // add username label
+  svg.append("text")
+      .text("iak0")
+      .attr("id", "credit")
+      .attr("x", width)
+      .attr("y", 12)
+      .attr("text-anchor", "end")
+    
+  // add the curvy lines
+  function tick() {
+      path.attr("d", d => {
+          var dx = d.target.x - d.source.x,
+              dy = d.target.y - d.source.y,
+              dr = Math.sqrt(dx * dx + dy * dy);
+          return "M" +
+              d.source.x + "," +
+              d.source.y + "A" +
+              dr + "," + dr + " 0 0,1 " +
+              d.target.x + "," +
+              d.target.y;
+      });
+
+      node.attr("transform",d => "translate(" + d.x + "," + d.y + ")");
+  };
+
+  function dragstarted(d) {
+      if (!d3.event.active) force.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+  };
+
+  function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+  };
+
+  function dragended(d) {
+      if (!d3.event.active) force.alphaTarget(0);
+      d.fixed = true;
+      if (d.fixed == true) {
+          d.fx = d.x;
+          d.fy = d.y;
+      }
+      else {
+          d.fx = null;
+          d.fy = null;
+      }
+      d3.select("#"+d.name.replace(/\s+/g,'').toLowerCase())
+        .style("fill", "red")
+        .style("stroke-width", "4px");
+  };
+
+  function revive(d) {
+    d.fixed = false;           
+    d.fx = null;
+    d.fy = null;
+    d3.select("#"+d.name.replace(/\s+/g,'').toLowerCase())
+      .style("fill", calculateFill)
+      .style("stroke-width", "1.5px");
+  }
+
+  function calculateFill(d) {
+    return COLORS[Math.min(d.degree, COLORS.length - 1)];
+  }
+}).catch(error => {
+  console.log(error);
+});
+
+</script>
+</body>
+</html>
